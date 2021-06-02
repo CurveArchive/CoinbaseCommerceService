@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
-namespace CoinbaseCommerceService.Models.Charge
+namespace CoinbaseCommerceService.Domain.Charges
 {
     public class Charge
     {
@@ -36,6 +38,9 @@ namespace CoinbaseCommerceService.Models.Charge
         [JsonProperty(PropertyName = "expires_at")]
         public DateTimeOffset ExpiresOn { get; set; }
         
+        [JsonProperty("confirmed_at")]
+        public DateTimeOffset ConfirmedAt { get; set; }
+        
         [JsonProperty(PropertyName = "exchange_rates")]
         public Dictionary<string, string> ExchangeRates { get; set; }
         
@@ -49,6 +54,29 @@ namespace CoinbaseCommerceService.Models.Charge
             return Name;
         }
     }
+    
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum TimelineStatus
+    {
+        [EnumMember(Value = "NEW")]
+        New,
+        [EnumMember(Value = "PENDING")]
+        Pending,
+        [EnumMember(Value = "COMPLETED")]
+        Completed,
+        [EnumMember(Value = "EXPIRED")]
+        Expired,
+        [EnumMember(Value = "UNRESOLVED")]
+        Unresolved,
+        [EnumMember(Value = "RESOLVED")]
+        Resolved,
+        [EnumMember(Value = "CANCELED")]
+        Canceled,
+        [EnumMember(Value = "REFUND PENDING")]
+        PendingRefund,
+        [EnumMember(Value = "REFUNDED")]
+        Refunded,
+    }
 
     public class Timeline
     {
@@ -56,7 +84,7 @@ namespace CoinbaseCommerceService.Models.Charge
         public DateTimeOffset Time { get; set; }
         
         [JsonProperty(PropertyName = "status")]
-        public string Status { get; set; }
+        public TimelineStatus Status { get; set; }
         
         [JsonProperty(PropertyName = "context")]
         public string Context { get; set; }
@@ -74,10 +102,10 @@ namespace CoinbaseCommerceService.Models.Charge
         public string Status { get; set; }
         
         [JsonProperty(PropertyName = "block")]
-        public PaymentBlock Block { get; set; }
+        public Block Block { get; set; }
     }
 
-    public class PaymentBlock
+    public class Block
     {
         [JsonProperty(PropertyName = "height")]
         public ulong Height { get; set; }

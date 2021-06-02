@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using CoinbaseCommerceService.Domain;
+using CoinbaseCommerceService.Domain.Charges;
 using CoinbaseCommerceService.Helpers;
-using CoinbaseCommerceService.Models;
-using CoinbaseCommerceService.Models.Charge;
 
 namespace CoinbaseCommerceService.Services
 {
     public class CoinbaseService
     {
+        private static readonly Uri BaseApi = new("https://api.commerce.coinbase.com/");
         private readonly HttpClient _httpClient;
 
         public CoinbaseService(string apiKey, string apiVersion = "2018-03-22")
@@ -19,11 +20,11 @@ namespace CoinbaseCommerceService.Services
 
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri(CoinbaseCommon.BaseApi),
+                BaseAddress = BaseApi,
                 DefaultRequestHeaders =
                 {
                     {"X-CC-Api-Key", apiKey},
-                    {"X-CC-Version", apiVersion},
+                    {"X-CC-Version", apiVersion}
                 }
             };
         }
@@ -35,9 +36,11 @@ namespace CoinbaseCommerceService.Services
             return await httpResponseMessage.Content.ReadAsJsonAsync<CoinbaseResponse<Charge>>();
         }
 
-        public async Task<CoinbaseResponse<List<Charge>>> ReadChargesAsync()
+        public async Task<CoinbaseResponse<List<Charge>>> ReadChargesAsync(FilterChargeOptions filterChargeOptions = null)
         {
-            var httpResponseMessage = await _httpClient.GetAsync($"/charges/");
+            var getChargesQuery = filterChargeOptions == null ? "/charges" : QueryHelpers.AddQueryString("/charges", filterChargeOptions.GetQuery());
+
+            var httpResponseMessage = await _httpClient.GetAsync(getChargesQuery);
 
             return await httpResponseMessage.Content.ReadAsJsonAsync<CoinbaseResponse<List<Charge>>>();
         }
